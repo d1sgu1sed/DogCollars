@@ -1,18 +1,16 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from uuid import UUID
 
-from api.models import UserCreate, ShowUser
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from api.models import UserCreate, ShowUser, DeleteUserResponse, UpdateUserRequest, UpdatedUserResponse
 from db.dals import UserDAL
 from db.session import get_db
-import uuid
-import re
 
-from api.models import DeleteUserResponse
-from api.models import ShowUser
-from api.models import UserCreate
-from db.models import User
+from logging import getLogger
 
-from fastapi import HTTPException
+logger = getLogger(__name__)
 
 user_router = APIRouter()
 
@@ -35,7 +33,11 @@ async def _create_new_user(body: UserCreate, db) -> ShowUser:
         
 @user_router.post("/", response_model=ShowUser)
 async def create_user(body: UserCreate, db: AsyncSession = Depends(get_db)) -> ShowUser:
-    return await _create_new_user(body, db)
+    try:
+        return await _create_new_user(body, db)
+    except IntegrityError as err:
+        logger.error(err)
+        raise HTTPException(status_code=503, detail=f"Database error: {err}")
 
 @user_router.delete("/", response_model=DeleteUserResponse)
 async def delete_user(user_id: UUID, db: AsyncSession = Depends(get_db)) -> DeleteUserResponse:
