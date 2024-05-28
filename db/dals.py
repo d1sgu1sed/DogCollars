@@ -8,9 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.models import User
 
 
-#############################
-# взаимодействия с пользователями
-#############################
+###################################
+# Взаимодействия с пользователями #
+###################################
 
 class UserDAL:
     def __init__(self, db_session: AsyncSession):
