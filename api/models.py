@@ -34,7 +34,7 @@ class UserCreate(BaseModel):
     def validate_name(cls, value):
         if not LETTER_MATCH_PATTERN.match(value):
             raise HTTPException(
-                status_code=422, detail="Имя должно состоять только из букв"
+                status_code=422, detail="Name should contain only letters"
             )
         return value
 
@@ -42,7 +42,7 @@ class UserCreate(BaseModel):
     def validate_surname(cls, value):
         if not LETTER_MATCH_PATTERN.match(value):
             raise HTTPException(
-                status_code=422, detail="Фамилия должна состоять только из букв"
+                status_code=422, detail="Surname should contain only letters"
             )
         return value
 
@@ -64,7 +64,7 @@ class UpdateUserRequest(BaseModel):
     def validate_name(cls, value):
         if not LETTER_MATCH_PATTERN.match(value):
             raise HTTPException(
-                status_code=422, detail="Имя должно состоять только из букв"
+                status_code=422, detail="Name should contain only letters"
             )
         return value
 
@@ -72,6 +72,6 @@ class UpdateUserRequest(BaseModel):
     def validate_surname(cls, value):
         if not LETTER_MATCH_PATTERN.match(value):
             raise HTTPException(
-                status_code=422, detail="Фамилия должна состоять только из букв"
+                status_code=422, detail="Surname should contain only letters"
             )
         return value

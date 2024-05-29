@@ -1,15 +1,19 @@
-from typing import Generator, Any
+import asyncio
+import os
+from datetime import timedelta
+from typing import Any
+from typing import Generator
 
+import asyncpg
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
+
 import settings
-from main import app
-import os
-import asyncio
 from db.session import get_db
-import asyncpg
+from main import app
 
 
 CLEAN_TABLES = [
@@ -40,7 +44,6 @@ async def async_session_test():
 
 @pytest.fixture(scope="function", autouse=True)
 async def clean_tables(async_session_test):
-    """Clean data in all tables before running test function"""
     async with async_session_test() as session:
         async with session.begin():
             for table_for_cleaning in CLEAN_TABLES:
@@ -60,10 +63,6 @@ async def _get_test_db():
 
 @pytest.fixture(scope="function")
 async def client() -> Generator[TestClient, Any, None]:
-    """
-    Create a new FastAPI TestClient that uses the `db_session` fixture to override
-    the `get_db` dependency that is injected into routes.
-    """
 
     app.dependency_overrides[get_db] = _get_test_db
     with TestClient(app) as client:

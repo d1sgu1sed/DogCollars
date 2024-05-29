@@ -49,7 +49,7 @@ async def test_update_user_check_one_is_updated(client, create_user_in_database,
     user_data_3 = {
       "user_id": uuid4(),
       "name": "Petr",
-      "surname": "Petr",
+      "surname": "Petrov",
       "email": "petr@kek.com",
       "is_active": True
     }
@@ -99,7 +99,7 @@ async def test_update_user_check_one_is_updated(client, create_user_in_database,
     (
             {"name": "123"},
             422,
-            {"detail": "Name should contains only letters"}
+            {"detail": "Name should contain only letters"}
     ),
     (
             {"email": ""},
@@ -125,7 +125,7 @@ async def test_update_user_check_one_is_updated(client, create_user_in_database,
     (
             {"surname": "123"},
             422,
-            {"detail": "Surname should contains only letters"}
+            {"detail": "Surname should contain only letters"}
     ),
     (
             {"email": "123"},

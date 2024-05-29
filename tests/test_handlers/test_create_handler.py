@@ -30,7 +30,7 @@ async def test_create_user_duplicate_email_error(client, get_user_from_database)
     user_data = {
       "name": "Sasha",
       "surname": "Petrov",
-      "email": "petra@gmail.com"
+      "email": "lol@kek.com"
     }
     user_data_same = {
       "name": "Petr",
@@ -61,8 +61,8 @@ async def test_create_user_duplicate_email_error(client, get_user_from_database)
     ({}, 422, {'detail': [{'loc': ['body', 'name'], 'msg': 'field required', 'type': 'value_error.missing'},
                           {'loc': ['body', 'surname'], 'msg': 'field required', 'type': 'value_error.missing'},
                           {'loc': ['body', 'email'], 'msg': 'field required', 'type': 'value_error.missing'}]}),
-    ({"name": 123, "surname": 456, "email": "petra"}, 422, {'detail': 'Name should contains only letters'}),
-    ({"name": "Sasha", "surname": 456, "email": "petra"}, 422, {'detail': 'Surname should contains only letters'}),
+    ({"name": 123, "surname": 456, "email": "petra"}, 422, {'detail': 'Name should contain only letters'}),
+    ({"name": "Sasha", "surname": 456, "email": "petra"}, 422, {'detail': 'Surname should contain only letters'}),
     ({"name": "Sasha", "surname": "Petrov", "email": "petra"},
      422, {'detail': [{'loc': ['body', 'email'],
                        'msg': 'value is not a valid email address', 'type': 'value_error.email'}]}),
