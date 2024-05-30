@@ -261,7 +261,7 @@ async def get_dog_by_id(
     return dog
 
 
-@dog_router.patch("/location", response_model=ShowDog)
+@dog_router.patch("/location", response_model=ShowCoords)
 async def update_dog_location(
     dog_id: UUID,
     latitude: float = Query(..., ge=-90.0, le=90.0),
@@ -290,7 +290,7 @@ async def update_dog_location(
     except IntegrityError as err:
         logger.error(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
-    return ShowDog(dog_id=updated_dog_id, **updated_dog_params)
+    return ShowCoords(dog_id=dog_for_update.dog_id, name=dog_for_update.name, latitude=updated_dog_params["latitude"], longitude=updated_dog_params["longitude"])
 
 @dog_router.get("/location", response_model=ShowCoords)
 async def get_dog_location(
