@@ -4,6 +4,7 @@ from fastapi.routing import APIRouter
 
 from api.handlers import user_router
 from api.handlers import dog_router
+from api.handlers import task_router
 from api.login_handler import login_router
 
 #####################
@@ -17,6 +18,7 @@ main_api_router = APIRouter() # главный router
 main_api_router.include_router(user_router, prefix="/user", tags=["user"])
 main_api_router.include_router(dog_router, prefix="/dog", tags=["dog"])
 main_api_router.include_router(login_router, prefix="/login", tags=["login"])
+main_api_router.include_router(task_router, prefix="/task", tags=["task"])
 app.include_router(main_api_router)
 
 if __name__ == "__main__":

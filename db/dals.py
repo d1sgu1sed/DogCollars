@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.models import PortalRole
 from db.models import User
 from db.models import Dog
+from db.models import Task
 
 ##########################
 # БЛОК ИНТЕРАКЦИЙ С DALS #
@@ -131,3 +132,34 @@ class DogDAL:
         update_dog_id_row = res.fetchone()
         if update_dog_id_row is not None:
             return update_dog_id_row[0]
+
+class TaskDAL:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create_task(self, description: str, created_by: UUID) -> Task:
+        new_task = Task(description=description, created_by=created_by)
+        self.session.add(new_task)
+        await self.session.flush()
+        return new_task
+
+    async def delete_task(self, task_id: UUID) -> Union[UUID, None]:
+        task = await self.session.get(Task, task_id)
+        if task:
+            await self.session.delete(task)
+            await self.session.flush()
+            return task_id
+        return None
+
+    async def update_task(self, task_id: UUID, **kwargs) -> Union[UUID, None]:
+        task = await self.session.get(Task, task_id)
+        if task:
+            for key, value in kwargs.items():
+                setattr(task, key, value)
+            await self.session.flush()
+            return task_id
+        return None
+
+    async def get_task_by_id(self, task_id: UUID) -> Union[Task, None]:
+        task = await self.session.get(Task, task_id)
+        return task

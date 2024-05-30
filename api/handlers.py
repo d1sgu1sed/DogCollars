@@ -1,5 +1,6 @@
 from logging import getLogger
 from uuid import UUID
+from typing import Union
 
 from fastapi import APIRouter
 from fastapi import Depends
@@ -15,12 +16,14 @@ from api.actions.user import _get_user_by_id
 from api.actions.user import _update_user
 from api.actions.user import check_user_permissions, check_user_permissions_for_dog_delete
 from api.actions.user import _create_new_dog, _delete_dog, _get_dog_by_id, _update_dog
+from api.actions.user import _create_new_task, _delete_task, _get_task_by_id, _update_task
 from api.schemas import DeleteUserResponse
 from api.schemas import ShowUser
 from api.schemas import UpdatedUserResponse
 from api.schemas import UpdateUserRequest
 from api.schemas import UserCreate
 from api.schemas import DogCreate, UpdatedDogResponse, UpdateDogRequest, DeleteDogResponse, ShowDog, ShowCoords
+from api.schemas import TaskCreate, ShowTask
 from db.models import User
 from db.session import get_db
 
@@ -308,3 +311,44 @@ async def get_dog_location(
     if dog.longitude is None:
         dog.longitude = 0
     return ShowCoords(dog_id=dog.dog_id, name=dog.name, latitude=dog.latitude, longitude=dog.longitude)
+
+#--------------------------------------------------------------#
+task_router = APIRouter()
+
+@task_router.post("/tasks/", response_model=ShowTask)
+async def create_task(
+    task: TaskCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token)
+):
+    return await _create_new_task(task, db, current_user)
+
+@task_router.delete("/tasks/{task_id}", response_model=Union[UUID, None])
+async def delete_task(
+    task_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    return await _delete_task(task_id, db)
+
+@task_router.put("/tasks/{task_id}", response_model=Union[UUID, None])
+async def update_task(
+    task_id: UUID,
+    updated_task_params: dict,
+    db: AsyncSession = Depends(get_db),
+):
+    return await _update_task(updated_task_params, task_id, db)
+
+@task_router.get("/tasks/{task_id}", response_model=Union[ShowTask, None])
+async def get_task(
+    task_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    task = await _get_task_by_id(task_id, db)
+    if task:
+        return ShowTask(
+            task_id=task.task_id,
+            description=task.description,
+            created_by=task.created_by,
+            is_active=task.is_active,
+        )
+    return None

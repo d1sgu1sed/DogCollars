@@ -148,3 +148,13 @@ class UpdateDogRequest(BaseModel):
                 status_code=422, detail="Gender should be 'male' or 'female'"
             )
         return value
+    
+#-------------------------------------------------------------#
+class TaskCreate(BaseModel):
+    description: str
+
+class ShowTask(BaseModel):
+    task_id: uuid.UUID
+    description: str
+    created_by: uuid.UUID
+    is_active: bool
