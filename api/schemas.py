@@ -8,9 +8,9 @@ from pydantic import constr
 from pydantic import EmailStr
 from pydantic import validator
 
-#########################
-# BLOCK WITH API MODELS #
-#########################
+##############################
+# БЛОК РАБОТЫ С API МОДЕЛЯМИ #
+##############################
 
 LETTER_MATCH_PATTERN = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
 

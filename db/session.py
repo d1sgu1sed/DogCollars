@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 import settings
 
 ##############################################
-# BLOCK FOR COMMON INTERACTION WITH DATABASE #
+# БЛОК ДЛЯ РАБОТЫ С ОБЫЧНЫМИ ИНТЕРАКЦИЯМИ БД #
 ##############################################
 
 # create async engine for interaction with database

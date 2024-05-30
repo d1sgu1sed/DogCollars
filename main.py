@@ -5,9 +5,9 @@ from fastapi.routing import APIRouter
 from api.handlers import user_router
 from api.login_handler import login_router
 
-#############################
-# блок с API ROUTES
-#############################
+#####################
+# блок с API ROUTES #
+#####################
 
 app = FastAPI(title="MobileDogs_K_and_S")
 
