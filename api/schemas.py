@@ -17,8 +17,6 @@ LETTER_MATCH_PATTERN = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
 
 class TunedModel(BaseModel):
     class Config:
-        """tells pydantic to convert even non dict obj to json"""
-
         orm_mode = True
 
 
@@ -82,7 +80,71 @@ class UpdateUserRequest(BaseModel):
             )
         return value
 
-
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+# ------------------------------------------------------------------------------- #   
+
+class ShowDog(TunedModel):
+    dog_id: uuid.UUID
+    name: str
+    gender: str
+    is_active: bool
+
+class ShowCoords(TunedModel):
+    dog_id: uuid.UUID
+    name: str
+    longitude: float
+    latitude: float
+
+
+class DogCreate(BaseModel):
+    name: str
+    gender: str
+
+    @validator("name")
+    def validate_name(cls, value):
+        if not LETTER_MATCH_PATTERN.match(value):
+            raise HTTPException(
+                status_code=422, detail="Name and gender should contain only letters"
+            )
+        return value
+
+    @validator("gender")
+    def validate_gender(cls, value):
+        if value not in ["male", "female"]:
+            raise HTTPException(
+                status_code=422, detail="Gender should be 'male' or 'female'"
+            )
+        return value
+
+
+
+class DeleteDogResponse(BaseModel):
+    deleted_dog_id: uuid.UUID
+
+
+class UpdatedDogResponse(BaseModel):
+    updated_dog_id: uuid.UUID
+
+
+class UpdateDogRequest(BaseModel):
+    name: Optional[constr(min_length=1)]
+    gender: Optional[str]
+
+    @validator("name", "gender")
+    def validate_name_or_gender(cls, value):
+        if not LETTER_MATCH_PATTERN.match(value):
+            raise HTTPException(
+                status_code=422, detail="Name and gender should contain only letters"
+            )
+        return value
+
+    @validator("gender")
+    def validate_gender(cls, value):
+        if value not in ["male", "female"]:
+            raise HTTPException(
+                status_code=422, detail="Gender should be 'male' or 'female'"
+            )
+        return value

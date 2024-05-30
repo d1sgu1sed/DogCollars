@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import PortalRole
 from db.models import User
-
+from db.models import Dog
 
 ##########################
 # БЛОК ИНТЕРАКЦИЙ С DALS #
@@ -16,8 +16,6 @@ from db.models import User
 
 
 class UserDAL:
-    """Data Access Layer for operating user info"""
-
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
 
@@ -77,3 +75,59 @@ class UserDAL:
         update_user_id_row = res.fetchone()
         if update_user_id_row is not None:
             return update_user_id_row[0]
+        
+class DogDAL:
+    def __init__(self, db_session: AsyncSession):
+        self.db_session = db_session
+
+    async def create_dog(
+        self,
+        name: str,
+        gender: str,
+        created_by: UUID,) -> Dog:
+        new_dog = Dog(
+            name=name,
+            gender=gender,
+            created_by=created_by,
+        )
+        self.db_session.add(new_dog)
+        await self.db_session.flush()
+        return new_dog
+
+    async def delete_dog(self, dog_id: UUID) -> Union[UUID, None]:
+        query = (
+            update(Dog)
+            .where(and_(Dog.dog_id == dog_id, Dog.is_active == True))
+            .values(is_active=False)
+            .returning(Dog.dog_id)
+        )
+        res = await self.db_session.execute(query)
+        deleted_dog_id_row = res.fetchone()
+        if deleted_dog_id_row is not None:
+            return deleted_dog_id_row[0]
+
+    async def get_dog_by_id(self, dog_id: UUID) -> Union[Dog, None]:
+        query = select(Dog).where(Dog.dog_id == dog_id)
+        res = await self.db_session.execute(query)
+        dog_row = res.fetchone()
+        if dog_row is not None:
+            return dog_row[0]
+        
+    async def get_dog_by_name(self, name: str) -> Union[Dog, None]:
+        query = select(Dog).where(Dog.name == name)
+        res = await self.db_session.execute(query)
+        dog_row = res.fetchone()
+        if dog_row is not None:
+            return dog_row[0]
+
+    async def update_dog(self, dog_id: UUID, **kwargs) -> Union[UUID, None]:
+        query = (
+            update(Dog)
+            .where(and_(Dog.dog_id == dog_id, Dog.is_active == True))
+            .values(kwargs)
+            .returning(Dog.dog_id)
+        )
+        res = await self.db_session.execute(query)
+        update_dog_id_row = res.fetchone()
+        if update_dog_id_row is not None:
+            return update_dog_id_row[0]

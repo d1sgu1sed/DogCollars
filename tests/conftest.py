@@ -3,6 +3,7 @@ import os
 from datetime import timedelta
 from typing import Any
 from typing import Generator
+from uuid import uuid4
 
 import asyncpg
 import pytest
@@ -19,8 +20,8 @@ from security import create_access_token
 
 CLEAN_TABLES = [
     "users",
+    "dogs",
 ]
-
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -132,3 +133,35 @@ def create_test_auth_headers_for_user(email: str) -> dict[str, str]:
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     return {"Authorization": f"Bearer {access_token}"}
+
+@pytest.fixture
+async def get_dog_from_database(asyncpg_pool):
+    async def get_dog_from_database_by_uuid(dog_id: str):
+        async with asyncpg_pool.acquire() as connection:
+            return await connection.fetch(
+                """SELECT * FROM dogs WHERE dog_id = $1;""", dog_id
+            )
+
+    return get_dog_from_database_by_uuid
+
+
+@pytest.fixture
+async def create_dog_in_database(asyncpg_pool):
+    async def create_dog_in_database(
+        dog_id: str,
+        name: str,
+        gender: str,
+        created_by: str,
+        is_active: bool,
+    ):
+        async with asyncpg_pool.acquire() as connection:
+            return await connection.execute(
+                """INSERT INTO dogs VALUES ($1, $2, $3, $4, $5)""",
+                dog_id,
+                name,
+                gender,
+                created_by,
+                is_active,
+            )
+
+    return create_dog_in_database

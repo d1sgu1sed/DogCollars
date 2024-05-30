@@ -1,7 +1,7 @@
 import uuid
 from enum import Enum
 
-from sqlalchemy import Boolean
+from sqlalchemy import Boolean, Float
 from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -13,7 +13,6 @@ from sqlalchemy.orm import declarative_base
 #############################
 
 Base = declarative_base()
-
 
 class PortalRole(str, Enum):
     ROLE_PORTAL_USER = "ROLE_PORTAL_USER"
@@ -47,3 +46,21 @@ class User(Base):
     def remove_admin_privileges_from_model(self):
         if self.is_admin:
             return {role for role in self.roles if role != PortalRole.ROLE_PORTAL_ADMIN}
+        
+class Dog(Base):
+    __tablename__ = "dogs"
+    dog_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False, unique=True)
+    gender = Column(String, nullable=False)
+    created_by = Column(UUID(as_uuid=True), nullable=False)
+    is_active = Column(Boolean(), default=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+
+
+class Task(Base):
+    __tablename__ = "tasks"
+    task_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    description = Column(String, nullable=False)
+    created_by = Column(UUID(as_uuid=True), nullable=False)
+    is_active = Column(Boolean(), default=True)
