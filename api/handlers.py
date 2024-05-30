@@ -327,6 +327,7 @@ async def create_task(
 async def delete_task(
     task_id: UUID,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token)
 ):
     return await _delete_task(task_id, db)
 
@@ -335,6 +336,7 @@ async def update_task(
     task_id: UUID,
     updated_task_params: dict,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token)
 ):
     return await _update_task(updated_task_params, task_id, db)
 
