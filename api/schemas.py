@@ -150,11 +150,14 @@ class UpdateDogRequest(BaseModel):
         return value
     
 #-------------------------------------------------------------#
+
 class TaskCreate(BaseModel):
     description: str
+    created_for: uuid.UUID
 
 class ShowTask(BaseModel):
     task_id: uuid.UUID
     description: str
     created_by: uuid.UUID
+    created_for: uuid.UUID
     is_active: bool

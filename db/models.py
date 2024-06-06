@@ -62,5 +62,6 @@ class Task(Base):
     __tablename__ = "tasks"
     task_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     description = Column(String, nullable=False)
+    created_for = Column(UUID(as_uuid=True), nullable=False)
     created_by = Column(UUID(as_uuid=True), nullable=False)
     is_active = Column(Boolean(), default=True)

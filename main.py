@@ -2,10 +2,10 @@ from fastapi import FastAPI
 import uvicorn
 from fastapi.routing import APIRouter
 
-from api.handlers import user_router
-from api.handlers import dog_router
-from api.handlers import task_router
-from api.login_handler import login_router
+from api.handlers.dog_router import dog_router
+from api.handlers.user_router import user_router
+from api.handlers.task_router import task_router
+from api.handlers.login_handler import login_router
 
 #####################
 # блок с API ROUTES #
