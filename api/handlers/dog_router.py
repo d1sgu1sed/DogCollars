@@ -12,7 +12,8 @@ from api.actions.dog import _create_new_dog
 from api.actions.dog import _delete_dog
 from api.actions.dog import _get_dog_by_id
 from api.actions.dog import _update_dog
-from api.actions.dog import check_user_permissions_for_dog_delete
+from api.actions.dog import check_user_permissions_for_dog
+from api.actions.dog import check_superadmin
 
 from api.actions.auth import get_current_user_from_token
 
@@ -46,7 +47,7 @@ async def delete_dog(
         raise HTTPException(
             status_code=404, detail=f"Dog with id {dog_id} not found."
         )
-    if not check_user_permissions_for_dog_delete(
+    if not check_user_permissions_for_dog(
         target_dog=dog_for_deletion,
         current_user=current_user,
     ):
@@ -76,7 +77,7 @@ async def update_dog_by_id(
         raise HTTPException(
             status_code=404, detail=f"Dog with id {dog_id} not found."
         )
-    if not check_user_permissions_for_dog_delete(
+    if not check_user_permissions_for_dog(
         target_dog=dog_for_update,
         current_user=current_user,
     ):
@@ -117,11 +118,11 @@ async def update_dog_location(
         raise HTTPException(
             status_code=404, detail=f"Dog with id {dog_id} not found."
         )
-    if not check_user_permissions_for_dog_delete(
-        target_dog=dog_for_update,
-        current_user=current_user,
+    if not check_superadmin(
+        current_user=current_user
     ):
         raise HTTPException(status_code=403, detail="Forbidden.")
+    
     updated_dog_params = {
         "latitude": latitude,
         "longitude": longitude,

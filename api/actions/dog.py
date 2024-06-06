@@ -53,10 +53,15 @@ async def _get_dog_by_id(dog_id, session) -> Union[Dog, None]:
         if dog is not None:
             return dog 
         
-def check_user_permissions_for_dog_delete(target_dog: Dog, current_user: User) -> bool:
+def check_user_permissions_for_dog(target_dog: Dog, current_user: User) -> bool:
     if len(current_user.roles) == 1 and PortalRole.ROLE_PORTAL_USER in current_user.roles:
         if target_dog.created_by != current_user.user_id:
             raise HTTPException(
                 status_code=403, detail="Common user can't delete this dog."
             )
     return True
+
+def check_superadmin(current_user: User) -> bool:
+    if PortalRole.ROLE_PORTAL_SUPERADMIN in current_user.roles:
+        return True
+    return False

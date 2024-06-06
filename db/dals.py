@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Union
 from uuid import UUID
 
 from sqlalchemy import and_
@@ -137,29 +137,41 @@ class TaskDAL:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_task(self, description: str, created_by: UUID) -> Task:
-        new_task = Task(description=description, created_by=created_by)
+    async def create_task(self, description: str, created_for: UUID, created_by: UUID) -> Task:
+        new_task = Task(
+            description=description,
+            created_for=created_for,
+            created_by=created_by,
+        )
         self.session.add(new_task)
         await self.session.flush()
         return new_task
 
     async def delete_task(self, task_id: UUID) -> Union[UUID, None]:
-        task = await self.session.get(Task, task_id)
-        if task:
-            await self.session.delete(task)
+        task = await self.get_task_by_id(task_id)
+        if task and task.is_active:
+            task.is_active = False
             await self.session.flush()
             return task_id
         return None
 
-    async def update_task(self, task_id: UUID, **kwargs) -> Union[UUID, None]:
-        task = await self.session.get(Task, task_id)
-        if task:
-            for key, value in kwargs.items():
+    async def update_task(self, task_id: UUID, **updated_task_params) -> Union[UUID, None]:
+        task = await self.get_task_by_id(task_id)
+        if task and task.is_active:
+            for key, value in updated_task_params.items():
                 setattr(task, key, value)
             await self.session.flush()
             return task_id
         return None
 
     async def get_task_by_id(self, task_id: UUID) -> Union[Task, None]:
-        task = await self.session.get(Task, task_id)
+        query = select(Task).filter(Task.task_id == task_id)
+        result = await self.session.execute(query)
+        task = result.scalar_one_or_none()
         return task
+
+    async def get_tasks_by_created_for(self, created_for: UUID) -> List[Task]:
+        query = select(Task).filter(Task.created_for == created_for)
+        result = await self.session.execute(query)
+        tasks = result.scalars().all()
+        return tasks

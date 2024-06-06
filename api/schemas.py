@@ -155,9 +155,19 @@ class TaskCreate(BaseModel):
     description: str
     created_for: uuid.UUID
 
+class UpdateTask(BaseModel):
+    description: str
+    is_active: bool
+
 class ShowTask(BaseModel):
     task_id: uuid.UUID
     description: str
     created_by: uuid.UUID
     created_for: uuid.UUID
     is_active: bool
+
+class DeleteTaskResponse(BaseModel):
+    deleted_task_id: uuid.UUID
+
+class UpdatedTaskResponse(BaseModel):
+    updated_task_id: uuid.UUID
