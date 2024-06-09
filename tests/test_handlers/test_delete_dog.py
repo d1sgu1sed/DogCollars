@@ -25,7 +25,7 @@ async def test_delete_dog(client, create_dog_in_database, get_dog_from_database,
     }
     await create_dog_in_database(**dog_data)
     resp = client.delete(
-        f"/dog/?dog_id={dog_data['dog_id']}",
+        f"/dog/delete_dog/?dog_id={dog_data['dog_id']}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 200
@@ -66,7 +66,7 @@ async def test_delete_dog_not_found(client, create_dog_in_database, create_user_
     await create_dog_in_database(**dog_data)
     id_not_exists_dog = uuid4()
     resp = client.delete(
-        f"/dog/?dog_id={id_not_exists_dog}",
+        f"/dog/delete_dog/?dog_id={id_not_exists_dog}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 404
@@ -94,7 +94,7 @@ async def test_delete_dog_id_validation_error(client, create_dog_in_database, cr
     }
     await create_dog_in_database(**dog_data)
     resp = client.delete(
-        "/dog/?dog_id=123",
+        "/dog/delete_dog/?dog_id=123",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 422
@@ -130,7 +130,7 @@ async def test_delete_dog_bad_cred(client, create_dog_in_database, create_user_i
     await create_dog_in_database(**dog_data)
     dog_id = uuid4()
     resp = client.delete(
-        f"/dog/?dog_id={dog_id}",
+        f"/dog/delete_dog/?dog_id={dog_id}",
         headers=create_test_auth_headers_for_user(user_data["email"] + "a"),
     )
     assert resp.status_code == 401
@@ -159,7 +159,7 @@ async def test_delete_dog_unauth(client, create_dog_in_database, create_user_in_
     bad_auth_headers = create_test_auth_headers_for_user(user_data["email"])
     bad_auth_headers["Authorization"] += "a"
     resp = client.delete(
-        f"/dog/?dog_id={dog_id}",
+        f"/dog/delete_dog/?dog_id={dog_id}",
         headers=bad_auth_headers,
     )
     assert resp.status_code == 401
@@ -186,7 +186,7 @@ async def test_delete_dog_no_jwt(client, create_dog_in_database, create_user_in_
     await create_dog_in_database(**dog_data)
     dog_id = uuid4()
     resp = client.delete(
-        f"/dog/?dog_id={dog_data['dog_id']}",
+        f"/dog/delete_dog/?dog_id={dog_data['dog_id']}",
         
     )
     assert resp.status_code == 401
@@ -220,7 +220,7 @@ async def test_delete_dog_by_privilege_roles(
     }
     await create_dog_in_database(**dog_data_for_deletion)
     resp = client.delete(
-        f"/dog/?dog_id={dog_data_for_deletion['dog_id']}",
+        f"/dog/delete_dog/?dog_id={dog_data_for_deletion['dog_id']}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 200
@@ -305,7 +305,7 @@ async def test_delete_another_dog(
     await create_dog_in_database(**dog_for_deletion)
     await create_user_in_database(**user_who_delete)
     resp = client.delete(
-        f"/dog/?dog_id={dog_for_deletion['dog_id']}",
+        f"/dog/delete_dog/?dog_id={dog_for_deletion['dog_id']}",
         headers=create_test_auth_headers_for_user(user_who_delete["email"]),
     )
     assert resp.status_code == expected_status_code

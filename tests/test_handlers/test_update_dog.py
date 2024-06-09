@@ -42,7 +42,7 @@ async def test_update_dog(
     }
     await create_dog_in_database(**dog_data)
     resp = client.patch(
-        f"/dog/?dog_id={dog_data['dog_id']}",  # Changed id to dog_id
+        f"/dog/update_dog_by_id/?dog_id={dog_data['dog_id']}",  # Changed id to dog_id
         data=json.dumps(dog_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -100,7 +100,7 @@ async def test_update_dog_check_one_is_updated(
     for dog_data in [dog_data_1, dog_data_2, dog_data_3]:
         await create_dog_in_database(**dog_data)
     resp = client.patch(
-        f"/dog/?dog_id={dog_data_1['dog_id']}",  # Changed id to dog_id
+        f"/dog/update_dog_by_id/?dog_id={dog_data_1['dog_id']}",  # Changed id to dog_id
         data=json.dumps(dog_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -187,7 +187,7 @@ async def test_update_dog_validation_error(
     await create_dog_in_database(**dog_data)
     await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/dog/?dog_id={dog_data['dog_id']}",  # Changed id to dog_id
+        f"/dog/update_dog_by_id/?dog_id={dog_data['dog_id']}",  # Changed id to dog_id
         data=json.dumps(dog_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -221,7 +221,7 @@ async def test_update_dog_id_validation_error(client, create_dog_in_database, cr
         "is_active": False,
     }
     resp = client.patch(
-        "/dog/?dog_id=123",
+        "/dog/update_dog_by_id/?dog_id=123",
         data=json.dumps(dog_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -263,7 +263,7 @@ async def test_update_dog_not_found_error(client, create_dog_in_database, create
     }
     dog_id = uuid4()
     resp = client.patch(
-        f"/dog/?dog_id={dog_id}",  # Changed id to dog_id
+        f"/dog/update_dog_by_id/?dog_id={dog_id}",  # Changed id to dog_id
         data=json.dumps(dog_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -303,7 +303,7 @@ async def test_update_dog_duplicate_name_error(client, create_dog_in_database, c
         await create_dog_in_database(**dog_data)
     await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/dog/?dog_id={dog_data_1['dog_id']}",  
+        f"/dog/update_dog_by_id/?dog_id={dog_data_1['dog_id']}",  
         data=json.dumps(dog_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )

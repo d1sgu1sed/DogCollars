@@ -27,6 +27,11 @@ class ShowUser(TunedModel):
     email: EmailStr
     is_active: bool
 
+class ShowUserCoords(TunedModel):
+    user_id: uuid.UUID
+    name: str
+    longitude: float
+    latitude: float
 
 class UserCreate(BaseModel):
     name: str
@@ -92,7 +97,7 @@ class ShowDog(TunedModel):
     gender: str
     is_active: bool
 
-class ShowCoords(TunedModel):
+class ShowDogCoords(TunedModel):
     dog_id: uuid.UUID
     name: str
     longitude: float
@@ -157,17 +162,24 @@ class TaskCreate(BaseModel):
 
 class UpdateTask(BaseModel):
     description: str
-    is_active: bool
 
-class ShowTask(BaseModel):
+class ShowTask(TunedModel):
     task_id: uuid.UUID
     description: str
     created_by: uuid.UUID
     created_for: uuid.UUID
     is_active: bool
 
-class DeleteTaskResponse(BaseModel):
-    deleted_task_id: uuid.UUID
+class ShowCompletedTask(TunedModel):
+    task_id: uuid.UUID
+    description: str
+    created_by: uuid.UUID
+    closed_by: uuid.UUID
+    created_for: uuid.UUID
+
+class CloseTaskResponse(BaseModel):
+    close_task_id: uuid.UUID
 
 class UpdatedTaskResponse(BaseModel):
     updated_task_id: uuid.UUID
+

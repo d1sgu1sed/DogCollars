@@ -8,7 +8,7 @@ from fastapi import Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.actions.dog import _create_new_dog
+from api.actions.dog import _create_new_dog, _get_dog_by_name
 from api.actions.dog import _delete_dog
 from api.actions.dog import _get_dog_by_id
 from api.actions.dog import _update_dog
@@ -17,7 +17,12 @@ from api.actions.dog import check_superadmin
 
 from api.actions.auth import get_current_user_from_token
 
-from api.schemas import DogCreate, UpdatedDogResponse, UpdateDogRequest, DeleteDogResponse, ShowDog, ShowCoords
+from api.schemas import DogCreate
+from api.schemas import UpdatedDogResponse
+from api.schemas import UpdateDogRequest
+from api.schemas import DeleteDogResponse
+from api.schemas import ShowDog
+from api.schemas import ShowDogCoords
 from db.models import User
 from db.session import get_db
 
@@ -25,7 +30,7 @@ logger = getLogger(__name__)
 
 dog_router = APIRouter()
 
-@dog_router.post("/", response_model=ShowDog)
+@dog_router.post("/create_dog/", response_model=ShowDog)
 async def create_dog(
     body: DogCreate, 
     db: AsyncSession = Depends(get_db),
@@ -36,7 +41,7 @@ async def create_dog(
         logger.error(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
 
-@dog_router.delete("/", response_model=DeleteDogResponse)
+@dog_router.delete("/delete_dog/", response_model=DeleteDogResponse)
 async def delete_dog(
     dog_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -59,7 +64,7 @@ async def delete_dog(
         )
     return DeleteDogResponse(deleted_dog_id=deleted_dog_id)
 
-@dog_router.patch("/", response_model=UpdatedDogResponse)
+@dog_router.patch("/update_dog_by_id/", response_model=UpdatedDogResponse)
 async def update_dog_by_id(
     dog_id: UUID,
     body: UpdateDogRequest,
@@ -91,7 +96,7 @@ async def update_dog_by_id(
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
     return UpdatedDogResponse(updated_dog_id=updated_dog_id)
 
-@dog_router.get("/", response_model=ShowDog)
+@dog_router.get("/get_dog_by_id/", response_model=ShowDog)
 async def get_dog_by_id(
     dog_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -105,14 +110,14 @@ async def get_dog_by_id(
     return dog
 
 
-@dog_router.patch("/location", response_model=ShowCoords)
+@dog_router.patch("/update_dog_location/", response_model=ShowDogCoords)
 async def update_dog_location(
     dog_id: UUID,
     latitude: float = Query(..., ge=-90.0, le=90.0),
     longitude: float = Query(..., ge=-180.0, le=180.0),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_from_token),
-) -> ShowDog:
+) -> ShowDogCoords:
     dog_for_update = await _get_dog_by_id(dog_id, db)
     if dog_for_update is None:
         raise HTTPException(
@@ -134,14 +139,14 @@ async def update_dog_location(
     except IntegrityError as err:
         logger.error(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
-    return ShowCoords(dog_id=dog_for_update.dog_id, name=dog_for_update.name, latitude=updated_dog_params["latitude"], longitude=updated_dog_params["longitude"])
+    return ShowDogCoords(dog_id=dog_for_update.dog_id, name=dog_for_update.name, latitude=updated_dog_params["latitude"], longitude=updated_dog_params["longitude"])
 
-@dog_router.get("/location", response_model=ShowCoords)
+@dog_router.get("/get_dog_location/", response_model=ShowDogCoords)
 async def get_dog_location(
     dog_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_from_token)
-) -> ShowCoords:
+) -> ShowDogCoords:
     dog = await _get_dog_by_id(dog_id, db)
     if dog is None:
         raise HTTPException(
@@ -151,4 +156,15 @@ async def get_dog_location(
         dog.latitude = 0
     if dog.longitude is None:
         dog.longitude = 0
-    return ShowCoords(dog_id=dog.dog_id, name=dog.name, latitude=dog.latitude, longitude=dog.longitude)
+    return ShowDogCoords(dog_id=dog.dog_id, name=dog.name, latitude=dog.latitude, longitude=dog.longitude)
+
+@dog_router.get("/get_dog_by_name/", response_model=ShowDog)
+async def get_dog_by_name(
+    name: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token)
+) -> ShowDog:
+    dog = await _get_dog_by_name(name, db)
+    if dog is None:
+        raise HTTPException(status_code=404, detail="Dog not found")
+    return dog

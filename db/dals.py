@@ -114,12 +114,13 @@ class DogDAL:
         if dog_row is not None:
             return dog_row[0]
         
-    async def get_dog_by_name(self, name: str) -> Union[Dog, None]:
+    async def get_dog_by_name(self, name: str) -> Dog:
         query = select(Dog).where(Dog.name == name)
         res = await self.db_session.execute(query)
         dog_row = res.fetchone()
         if dog_row is not None:
             return dog_row[0]
+    
 
     async def update_dog(self, dog_id: UUID, **kwargs) -> Union[UUID, None]:
         query = (
@@ -147,10 +148,11 @@ class TaskDAL:
         await self.session.flush()
         return new_task
 
-    async def delete_task(self, task_id: UUID) -> Union[UUID, None]:
+    async def close_task(self, task_id: UUID, current_user: User) -> Union[UUID, None]:
         task = await self.get_task_by_id(task_id)
         if task and task.is_active:
             task.is_active = False
+            task.closed_by = current_user.user_id
             await self.session.flush()
             return task_id
         return None
@@ -175,3 +177,26 @@ class TaskDAL:
         result = await self.session.execute(query)
         tasks = result.scalars().all()
         return tasks
+    
+    async def delete_tasks_by_created_for(self, created_for: UUID) -> List[UUID]:
+        tasks = await self.get_tasks_by_created_for(created_for)
+        deleted_task_ids = []
+        for task in tasks:
+            if task.is_active:
+                task.is_active = False
+                deleted_task_ids.append(task.task_id)
+        await self.session.flush()
+        return deleted_task_ids
+
+    async def get_completed_tasks(self) -> List[Task]:
+        query = select(Task).filter(Task.is_active == False)
+        result = await self.session.execute(query)
+        tasks = result.scalars().all()
+        return tasks
+    
+    async def get_tasks_by_closed_by(self, closed_by: UUID) -> List[Task]:
+        query = select(Task).filter(Task.closed_by == closed_by, Task.is_active == False)
+        result = await self.session.execute(query)
+        tasks = result.scalars().all()
+        return tasks
+

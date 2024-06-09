@@ -9,7 +9,7 @@ async def test_create_user(client, get_user_from_database):
         "email": "lol@kek.com",
         "password": "SamplePass1!",
     }
-    resp = client.post("/user/", data=json.dumps(user_data))
+    resp = client.post("/user/create_user", data=json.dumps(user_data))
     data_from_resp = resp.json()
     assert resp.status_code == 200
     assert data_from_resp["name"] == user_data["name"]
@@ -39,7 +39,7 @@ async def test_create_user_duplicate_email_error(client, get_user_from_database)
         "email": "lol@kek.com",
         "password": "SamplePass1!",
     }
-    resp = client.post("/user/", data=json.dumps(user_data))
+    resp = client.post("/user/create_user", data=json.dumps(user_data))
     data_from_resp = resp.json()
     assert resp.status_code == 200
     assert data_from_resp["name"] == user_data["name"]
@@ -54,7 +54,7 @@ async def test_create_user_duplicate_email_error(client, get_user_from_database)
     assert user_from_db["email"] == user_data["email"]
     assert user_from_db["is_active"] is True
     assert str(user_from_db["user_id"]) == data_from_resp["user_id"]
-    resp = client.post("/user/", data=json.dumps(user_data_same))
+    resp = client.post("/user/create_user", data=json.dumps(user_data_same))
     assert resp.status_code == 503
     assert (
         'duplicate key value violates unique constraint "users_email_key"'
@@ -126,7 +126,7 @@ async def test_create_user_duplicate_email_error(client, get_user_from_database)
 async def test_create_user_validation_error(
     client, user_data_for_creation, expected_status_code, expected_detail
 ):
-    resp = client.post("/user/", data=json.dumps(user_data_for_creation))
+    resp = client.post("/user/create_user", data=json.dumps(user_data_for_creation))
     data_from_resp = resp.json()
     assert resp.status_code == expected_status_code
     assert data_from_resp == expected_detail

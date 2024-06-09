@@ -1,7 +1,7 @@
 from logging import getLogger
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi import Depends
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
@@ -13,7 +13,7 @@ from api.actions.user import _get_user_by_id
 from api.actions.user import _update_user
 from api.actions.user import check_user_permissions
 
-from api.schemas import DeleteUserResponse
+from api.schemas import DeleteUserResponse, ShowUserCoords
 from api.schemas import ShowUser
 from api.schemas import UpdatedUserResponse
 from api.schemas import UpdateUserRequest
@@ -29,7 +29,7 @@ logger = getLogger(__name__)
 
 user_router = APIRouter()
 
-@user_router.post("/", response_model=ShowUser)
+@user_router.post("/create_user/", response_model=ShowUser)
 async def create_user(body: UserCreate, db: AsyncSession = Depends(get_db)) -> ShowUser:
     try:
         return await _create_new_user(body, db)
@@ -38,7 +38,7 @@ async def create_user(body: UserCreate, db: AsyncSession = Depends(get_db)) -> S
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
 
 
-@user_router.delete("/", response_model=DeleteUserResponse)
+@user_router.delete("/delete_user/", response_model=DeleteUserResponse)
 async def delete_user(
     user_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -62,7 +62,7 @@ async def delete_user(
     return DeleteUserResponse(deleted_user_id=deleted_user_id)
 
 
-@user_router.patch("/admin_privilege", response_model=UpdatedUserResponse)
+@user_router.patch("/admin_privilege/grant_admin_privilege/", response_model=UpdatedUserResponse)
 async def grant_admin_privilege(
     user_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -97,7 +97,7 @@ async def grant_admin_privilege(
     return UpdatedUserResponse(updated_user_id=updated_user_id)
 
 
-@user_router.delete("/admin_privilege", response_model=UpdatedUserResponse)
+@user_router.delete("/admin_privilege/revoke_admin_privilege/", response_model=UpdatedUserResponse)
 async def revoke_admin_privilege(
     user_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -131,7 +131,7 @@ async def revoke_admin_privilege(
     return UpdatedUserResponse(updated_user_id=updated_user_id)
 
 
-@user_router.get("/", response_model=ShowUser)
+@user_router.get("/get_user_by_id/", response_model=ShowUser)
 async def get_user_by_id(
     user_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -145,7 +145,7 @@ async def get_user_by_id(
     return user
 
 
-@user_router.patch("/", response_model=UpdatedUserResponse)
+@user_router.patch("/update_user_by_id/", response_model=UpdatedUserResponse)
 async def update_user_by_id(
     user_id: UUID,
     body: UpdateUserRequest,
@@ -176,3 +176,46 @@ async def update_user_by_id(
         logger.error(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
     return UpdatedUserResponse(updated_user_id=updated_user_id)
+
+@user_router.patch("/update_user_location", response_model=ShowUserCoords)
+async def update_user_location(
+    latitude: float = Query(..., ge=-90.0, le=90.0),
+    longitude: float = Query(..., ge=-180.0, le=180.0),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+) -> ShowUserCoords:
+    user_id = current_user.user_id
+    user_for_update = await _get_user_by_id(user_id, db)
+    if user_for_update is None:
+        raise HTTPException(
+            status_code=404, detail=f"User with id {user_id} not found."
+        )
+    updated_user_params = {
+        "latitude": latitude,
+        "longitude": longitude,
+    }
+    try:
+        updated_user_id = await _update_user(
+            updated_user_params=updated_user_params, session=db, user_id=user_id
+        )
+    except IntegrityError as err:
+        logger.error(err)
+        raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    return ShowUserCoords(user_id=user_for_update.user_id, name=user_for_update.name, latitude=updated_user_params["latitude"], longitude=updated_user_params["longitude"])
+
+@user_router.get("/get_user_location", response_model=ShowUserCoords)
+async def get_user_location(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token)
+) -> ShowUserCoords:
+    user_id = current_user.user_id
+    user = await _get_user_by_id(user_id, db)
+    if user is None:
+        raise HTTPException(
+            status_code=404, detail=f"User with id {user_id} not found."
+        )
+    if user.latitude is None:
+        user.latitude = 0
+    if user.longitude is None:
+        user.longitude = 0
+    return ShowUserCoords(user_id=user.user_id, name=user.name, latitude=user.latitude, longitude=user.longitude)

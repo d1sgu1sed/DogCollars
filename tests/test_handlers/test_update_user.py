@@ -35,7 +35,7 @@ async def test_update_user(
     }
     await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/user/?user_id={user_data['user_id']}",
+        f"/user/update_user_by_id/?user_id={user_data['user_id']}",
         data=json.dumps(user_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -89,7 +89,7 @@ async def test_update_user_check_one_is_updated(
     for user_data in [user_data_1, user_data_2, user_data_3]:
         await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/user/?user_id={user_data_1['user_id']}",
+        f"/user/update_user_by_id/?user_id={user_data_1['user_id']}",
         data=json.dumps(user_data_updated),
         headers=create_test_auth_headers_for_user(user_data_1["email"]),
     )
@@ -209,7 +209,7 @@ async def test_update_user_validation_error(
     }
     await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/user/?user_id={user_data['user_id']}",
+        f"/user/update_user_by_id/?user_id={user_data['user_id']}",
         data=json.dumps(user_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -235,7 +235,7 @@ async def test_update_user_id_validation_error(client, create_user_in_database):
         "email": "cheburek@kek.com",
     }
     resp = client.patch(
-        "/user/?user_id=123",
+        "/user/update_user_by_id/?user_id=123",
         data=json.dumps(user_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -270,7 +270,7 @@ async def test_update_user_not_found_error(client, create_user_in_database):
     }
     user_id = uuid4()
     resp = client.patch(
-        f"/user/?user_id={user_id}",
+        f"/user/update_user_by_id/?user_id={user_id}",
         data=json.dumps(user_data_updated),
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
@@ -304,7 +304,7 @@ async def test_update_user_duplicate_email_error(client, create_user_in_database
     for user_data in [user_data_1, user_data_2]:
         await create_user_in_database(**user_data)
     resp = client.patch(
-        f"/user/?user_id={user_data_1['user_id']}",
+        f"/user/update_user_by_id/?user_id={user_data_1['user_id']}",
         data=json.dumps(user_data_updated),
         headers=create_test_auth_headers_for_user(user_data_1["email"]),
     )

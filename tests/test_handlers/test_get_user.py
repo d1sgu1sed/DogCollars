@@ -16,7 +16,7 @@ async def test_get_user(client, create_user_in_database):
     }
     await create_user_in_database(**user_data)
     resp = client.get(
-        f"/user/?user_id={user_data['user_id']}",
+        f"/user/get_user_by_id/?user_id={user_data['user_id']}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 200
@@ -40,7 +40,7 @@ async def test_get_user_id_validation_error(client, create_user_in_database):
     }
     await create_user_in_database(**user_data)
     resp = client.get(
-        "/user/?user_id=123",
+        "/user/get_user_by_id/?user_id=123",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 422
@@ -69,7 +69,7 @@ async def test_get_user_not_found(client, create_user_in_database):
     user_id_for_finding = uuid4()
     await create_user_in_database(**user_data)
     resp = client.get(
-        f"/user/?user_id={user_id_for_finding}",
+        f"/user/get_user_by_id/?user_id={user_id_for_finding}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 404
@@ -89,7 +89,7 @@ async def test_get_user_unauth_error(client, create_user_in_database):
     user_id_for_finding = uuid4()
     await create_user_in_database(**user_data)
     resp = client.get(
-        f"/user/?user_id={user_id_for_finding}",
+        f"/user/get_user_by_id/?user_id={user_id_for_finding}",
     )
     assert resp.status_code == 401
     assert resp.json() == {"detail": "Not authenticated"}
@@ -108,7 +108,7 @@ async def test_get_user_bad_cred(client, create_user_in_database):
     await create_user_in_database(**user_data)
     user_id = uuid4()
     resp = client.get(
-        f"/user/?user_id={user_id}",
+        f"/user/get_user_by_id/?user_id={user_id}",
         headers=create_test_auth_headers_for_user(user_data["email"] + "a"),
     )
     assert resp.status_code == 401
@@ -130,7 +130,7 @@ async def test_get_user_unauth(client, create_user_in_database):
     bad_auth_headers = create_test_auth_headers_for_user(user_data["email"])
     bad_auth_headers["Authorization"] += "a"
     resp = client.get(
-        f"/user/?user_id={user_id}",
+        f"/user/get_user_by_id/?user_id={user_id}",
         headers=bad_auth_headers,
     )
     assert resp.status_code == 401

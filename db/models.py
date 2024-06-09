@@ -30,6 +30,8 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     hashed_password = Column(String, nullable=False)
     roles = Column(ARRAY(String), nullable=False)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     @property
     def is_superadmin(self) -> bool:
@@ -64,4 +66,5 @@ class Task(Base):
     description = Column(String, nullable=False)
     created_for = Column(UUID(as_uuid=True), nullable=False)
     created_by = Column(UUID(as_uuid=True), nullable=False)
+    closed_by = Column(UUID(as_uuid=True), nullable=True)
     is_active = Column(Boolean(), default=True)

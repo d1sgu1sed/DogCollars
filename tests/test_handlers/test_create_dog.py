@@ -22,7 +22,7 @@ async def test_create_dog(client, get_dog_from_database, create_user_in_database
         "created_by": str(user_data["user_id"]),
     }
     resp = client.post(
-        "/dog/", 
+        "/dog/create_dog", 
         data=json.dumps(dog_data),
         headers=create_test_auth_headers_for_user(user_data["email"]),
         )
@@ -61,7 +61,7 @@ async def test_create_dog_duplicate_name_error(client, get_dog_from_database, cr
     }
     await create_user_in_database(**user_data)
     resp = client.post(
-        "/dog/", 
+        "/dog/create_dog", 
         data=json.dumps(dog_data),
         headers=create_test_auth_headers_for_user(user_data["email"])
         )
@@ -79,7 +79,7 @@ async def test_create_dog_duplicate_name_error(client, get_dog_from_database, cr
     assert str(dog_from_db["dog_id"]) == data_from_resp["dog_id"]
     
     resp = client.post(
-        "/dog/", 
+        "/dog/create_dog", 
         data=json.dumps(dog_data_same),
         headers=create_test_auth_headers_for_user(user_data["email"])
         )
@@ -140,7 +140,7 @@ async def test_create_dog_validation_error(
     }
     await create_user_in_database(**user_data)
     resp = client.post(
-        "/dog/", 
+        "/dog/create_dog", 
         data=json.dumps(dog_data_for_creation),
         headers=create_test_auth_headers_for_user(user_data["email"])
         )

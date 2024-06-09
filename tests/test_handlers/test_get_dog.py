@@ -22,7 +22,7 @@ async def test_get_dog(client, create_dog_in_database, create_user_in_database):
     }
     await create_dog_in_database(**dog_data)
     resp = client.get(
-        f"/dog/?dog_id={dog_data['dog_id']}",
+        f"/dog/get_dog_by_id/?dog_id={dog_data['dog_id']}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 200
@@ -52,7 +52,7 @@ async def test_get_dog_id_validation_error(client, create_dog_in_database, creat
     }
     await create_dog_in_database(**dog_data)
     resp = client.get(
-        "/dog/?dog_id=123",
+        "/dog/get_dog_by_id/?dog_id=123",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 422
@@ -88,7 +88,7 @@ async def test_get_dog_not_found(client, create_dog_in_database, create_user_in_
     dog_id_for_finding = uuid4()
     await create_dog_in_database(**dog_data)
     resp = client.get(
-        f"/dog/?dog_id={dog_id_for_finding}",
+        f"/dog/get_dog_by_id/?dog_id={dog_id_for_finding}",
         headers=create_test_auth_headers_for_user(user_data["email"]),
     )
     assert resp.status_code == 404
@@ -104,7 +104,7 @@ async def test_get_dog_unauth_error(client, create_dog_in_database):
     }
     await create_dog_in_database(**dog_data)
     resp = client.get(
-        f"/dog/?dog_id={dog_data['dog_id']}",
+        f"/dog/get_dog_by_id/?dog_id={dog_data['dog_id']}",
     )
     assert resp.status_code == 401
     assert resp.json() == {"detail": "Not authenticated"}
@@ -129,7 +129,7 @@ async def test_get_dog_bad_cred(client, create_dog_in_database, create_user_in_d
     }
     await create_dog_in_database(**dog_data)
     resp = client.get(
-        f"/dog/?dog_id={dog_data['dog_id']}",
+        f"/dog/get_dog_by_id/?dog_id={dog_data['dog_id']}",
         headers=create_test_auth_headers_for_user(user_data["email"] + "a"),
     )
     assert resp.status_code == 401
@@ -157,7 +157,7 @@ async def test_get_dog_unauth(client, create_dog_in_database, create_user_in_dat
     bad_auth_headers = create_test_auth_headers_for_user(user_data["email"])
     bad_auth_headers["Authorization"] += "a"
     resp = client.get(
-        f"/dog/?dog_id={dog_data['dog_id']}",
+        f"/dog/get_dog_by_id/?dog_id={dog_data['dog_id']}",
         headers=bad_auth_headers,
     )
     assert resp.status_code == 401
