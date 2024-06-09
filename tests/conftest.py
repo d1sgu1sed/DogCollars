@@ -89,6 +89,28 @@ async def asyncpg_pool():
     yield pool
     pool.close()
 
+@pytest.fixture
+async def create_task_in_database(asyncpg_pool):
+    async def create_task_in_database(
+        task_id: str,
+        description: str,
+        created_for: str,
+        created_by: str,
+        is_active: bool,
+        closed_by: str = None
+    ):
+        async with asyncpg_pool.acquire() as connection:
+            return await connection.execute(
+                """INSERT INTO tasks VALUES ($1, $2, $3, $4, $5, $6)""",
+                task_id,
+                description,
+                created_for,
+                created_by,
+                closed_by,
+                is_active,
+            )
+
+    return create_task_in_database
 
 @pytest.fixture
 async def get_user_from_database(asyncpg_pool):

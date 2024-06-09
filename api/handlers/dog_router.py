@@ -94,6 +94,8 @@ async def update_dog_by_id(
     except IntegrityError as err:
         logger.error(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    if updated_dog_id is None:
+        raise HTTPException(status_code=400, detail="Dog is not active")
     return UpdatedDogResponse(updated_dog_id=updated_dog_id)
 
 @dog_router.get("/get_dog_by_id/", response_model=ShowDog)

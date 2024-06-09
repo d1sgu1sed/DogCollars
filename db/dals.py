@@ -122,7 +122,7 @@ class DogDAL:
             return dog_row[0]
     
 
-    async def update_dog(self, dog_id: UUID, **kwargs) -> Union[UUID, None]:
+    async def update_dog(self, dog_id: UUID, **kwargs) -> UUID:
         query = (
             update(Dog)
             .where(and_(Dog.dog_id == dog_id, Dog.is_active == True))
