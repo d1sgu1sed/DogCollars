@@ -8,7 +8,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from api.actions.task import _create_new_task, _get_completed_tasks, _get_tasks_by_closed_by
+from api.actions.task import _create_new_task, _get_active_tasks, _get_completed_tasks, _get_tasks_by_closed_by
 from api.actions.task import _close_task
 from api.actions.task import _get_task_by_id
 from api.actions.task import _update_task
@@ -49,7 +49,6 @@ async def close_task(
         raise HTTPException(
             status_code=404, detail=f"Task with id {task_id} not found."
         )
-    #TODO: СРАВНИВАТЬ КООРДИНАТЫ И ДОБАВИТЬ ЗАКРЫТИЕ ДЛЯ АДМИНА
     permission = await check_user_permissions_for_close_task(task_for_deletion, current_user, db)
     if not permission:
         raise HTTPException(
@@ -131,23 +130,23 @@ async def get_tasks_by_created_for(
         ) for task in tasks
     ]
 
-@task_router.get("/get_completed_tasks/", response_model=List[ShowCompletedTask])
-async def get_completed_tasks(
+@task_router.get("/get_all_active_tasks/", response_model=List[ShowTask])
+async def get_all_active_tasks(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_from_token)
-) -> List[ShowCompletedTask]:
-    tasks = await _get_completed_tasks(db)
+) -> List[ShowTask]:
+    tasks = await _get_active_tasks(db)
     if tasks == []:
         raise HTTPException(
-            status_code=404, detail='Have no completed tasks'
+            status_code=404, detail='No active tasks'
         )
-    return [ShowCompletedTask(
-        task_id=task.task_id,
-        description=task.description,
-        created_by=task.created_by,
-        closed_by=task.closed_by,
-        created_for=task.created_for,
-    ) for task in tasks]
+    return [ShowTask(
+                task_id=task.task_id,
+                description=task.description,
+                created_for=task.created_for,
+                created_by=task.created_by,
+                is_active=task.is_active,
+            ) for task in tasks]
 
 @task_router.get("/all_completed_tasks/", response_model=List[ShowCompletedTask])
 async def get_completed_tasks_by_user(

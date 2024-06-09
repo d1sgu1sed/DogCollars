@@ -26,23 +26,25 @@ async def _create_new_dog(body: DogCreate, session, current_user: User) -> ShowD
             is_active=dog.is_active,
         )
 
-async def _delete_dog(dog_id, session) -> UUID:
-    async with session.begin():
-        dog_dal = DogDAL(session)
-        deleted_dog_id = await dog_dal.delete_dog(
-            dog_id=dog_id,
-        )
-        return deleted_dog_id
-
-
-async def _update_dog(updated_dog_params: dict, dog_id: UUID, session) -> UUID:
+async def _delete_dog(dog_id: UUID, session, current_user: User) -> UUID:
     async with session.begin():
         dog_dal = DogDAL(session)
         task_dal = TaskDAL(session)
 
         tasks = await task_dal.get_tasks_by_created_for(dog_id)
         for task in tasks:
-            await task_dal.delete_task(task.task_id)
+            await task_dal.close_task(task.task_id, current_user)
+
+        deleted_dog_id = await dog_dal.delete_dog(
+            dog_id=dog_id,
+        )
+
+        return deleted_dog_id
+
+
+async def _update_dog(updated_dog_params: dict, dog_id: UUID, session) -> UUID:
+    async with session.begin():
+        dog_dal = DogDAL(session)
         
         updated_dog_id = await dog_dal.update_dog(
             dog_id=dog_id, **updated_dog_params

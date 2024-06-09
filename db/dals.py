@@ -107,7 +107,7 @@ class DogDAL:
         if deleted_dog_id_row is not None:
             return deleted_dog_id_row[0]
 
-    async def get_dog_by_id(self, dog_id: UUID) -> Union[Dog, None]:
+    async def get_dog_by_id(self, dog_id: UUID) -> Dog:
         query = select(Dog).where(Dog.dog_id == dog_id)
         res = await self.db_session.execute(query)
         dog_row = res.fetchone()
@@ -156,6 +156,7 @@ class TaskDAL:
             await self.session.flush()
             return task_id
         return None
+    
 
     async def update_task(self, task_id: UUID, **updated_task_params) -> Union[UUID, None]:
         task = await self.get_task_by_id(task_id)
@@ -187,6 +188,12 @@ class TaskDAL:
                 deleted_task_ids.append(task.task_id)
         await self.session.flush()
         return deleted_task_ids
+
+    async def get_active_tasks(self) -> List[Task]:
+        query = select(Task).filter(Task.is_active == True)
+        result = await self.session.execute(query)
+        tasks = result.scalars().all()
+        return tasks
 
     async def get_completed_tasks(self) -> List[Task]:
         query = select(Task).filter(Task.is_active == False)

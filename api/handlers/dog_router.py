@@ -57,7 +57,7 @@ async def delete_dog(
         current_user=current_user,
     ):
         raise HTTPException(status_code=403, detail="Forbidden.")
-    deleted_dog_id = await _delete_dog(dog_id, db)
+    deleted_dog_id = await _delete_dog(dog_id, db, current_user)
     if deleted_dog_id is None:
         raise HTTPException(
             status_code=404, detail=f"Dog with id {dog_id} not found."

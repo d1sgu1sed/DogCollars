@@ -36,7 +36,7 @@ async def _create_new_task(body: TaskCreate, session, current_user: User) -> Sho
             is_active=task.is_active,
         )
 
-async def _close_task(task_id: UUID, session, current_user: User) -> Union[UUID, None]:
+async def _close_task(task_id: UUID, session, current_user: User) -> UUID:
     async with session.begin():
         task_dal = TaskDAL(session)
         updated_task_id = await task_dal.close_task(
@@ -45,7 +45,7 @@ async def _close_task(task_id: UUID, session, current_user: User) -> Union[UUID,
         )
         return updated_task_id
 
-async def _update_task(updated_task_params: dict, task_id: UUID, session) -> Union[UUID, None]:
+async def _update_task(updated_task_params: dict, task_id: UUID, session) -> UUID:
     async with session.begin():
         task_dal = TaskDAL(session)
         task = await task_dal.get_task_by_id(task_id)
@@ -56,7 +56,7 @@ async def _update_task(updated_task_params: dict, task_id: UUID, session) -> Uni
             return updated_task_id
         return None
 
-async def _get_task_by_id(task_id: UUID, session) -> Union[Task, None]:
+async def _get_task_by_id(task_id: UUID, session) -> Task:
     async with session.begin():
         task_dal = TaskDAL(session)
         task = await task_dal.get_task_by_id(
@@ -65,6 +65,7 @@ async def _get_task_by_id(task_id: UUID, session) -> Union[Task, None]:
         if task and task.is_active:
             return task
         return None
+    
 
 async def _get_tasks_by_created_for(created_for: UUID, session) -> List[Task]:
     async with session.begin():
@@ -74,6 +75,12 @@ async def _get_tasks_by_created_for(created_for: UUID, session) -> List[Task]:
         )
         return [task for task in tasks if task.is_active]
 
+async def _get_active_tasks(session) -> List[Task]:
+    async with session.begin():
+        task_dal = TaskDAL(session)
+        tasks = await task_dal.get_active_tasks()
+        return tasks
+    
 async def _get_completed_tasks(session) -> List[Task]:
     async with session.begin():
         task_dal = TaskDAL(session)
@@ -99,11 +106,6 @@ async def check_user_permissions_for_close_task(target_task: Task, current_user:
         return True
     
     dog_from_task = await _get_dog_by_id(target_task.created_for, db)
-    # ПРОВЕРКА НА КООРДИНАТЫ
-    dog_coords = (dog_from_task.latitude, dog_from_task.longitude)
-    user_coords = (current_user.latitude, current_user.longitude)
-    print(dog_coords)
-    print(user_coords)
     distance = get_distance_between_points(dog_from_task.latitude, dog_from_task.longitude,
                                            current_user.latitude, current_user.longitude)
     print(distance)
@@ -123,7 +125,6 @@ def deg2rad(degrees):
 
 def get_distance_between_points(latitude1, longitude1, latitude2, longitude2, unit = 'kilometers'):
     theta = longitude1 - longitude2
-    print(theta)
     distance = 60 * 1.1515 * rad2deg(
         arccos(
             (sin(deg2rad(latitude1)) * sin(deg2rad(latitude2))) + 
