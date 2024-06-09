@@ -1,4 +1,5 @@
 from logging import getLogger
+from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter
@@ -8,7 +9,7 @@ from fastapi import Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.actions.dog import _create_new_dog, _get_dog_by_name
+from api.actions.dog import _create_new_dog, _get_active_dogs, _get_dog_by_name
 from api.actions.dog import _delete_dog
 from api.actions.dog import _get_dog_by_id
 from api.actions.dog import _update_dog
@@ -40,6 +41,22 @@ async def create_dog(
     except IntegrityError as err:
         logger.error(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    
+@dog_router.get("/active_dogs", response_model=List[ShowDog])
+async def get_active_dogs(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token)
+) -> List[ShowDog]:
+    active_dogs = await _get_active_dogs(db)
+    return [
+        ShowDog(
+            dog_id=dog.dog_id,
+            name=dog.name,
+            gender=dog.gender,
+            is_active=dog.is_active,
+        )
+        for dog in active_dogs
+    ]
 
 @dog_router.delete("/delete_dog/", response_model=DeleteDogResponse)
 async def delete_dog(

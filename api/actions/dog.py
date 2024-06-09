@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Union
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -66,6 +66,21 @@ async def _get_dog_by_name(name: str, session) -> UUID:
         dog_dal = DogDAL(session)
         dog_id = await dog_dal.get_dog_by_name(name)
         return dog_id
+
+async def _get_active_dogs(session) -> List[ShowDog]:
+    async with session.begin():
+        dog_dal = DogDAL(session)
+        active_dogs = await dog_dal.get_active_dogs()
+        return [
+            ShowDog(
+                dog_id=dog.dog_id,
+                name=dog.name,
+                gender=dog.gender,
+                is_active=dog.is_active,
+            )
+            for dog in active_dogs
+        ]
+
 
         
 def check_user_permissions_for_dog(target_dog: Dog, current_user: User) -> bool:

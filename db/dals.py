@@ -114,6 +114,12 @@ class DogDAL:
         if dog_row is not None:
             return dog_row[0]
         
+    async def get_active_dogs(self) -> List[Dog]:
+        query = select(Dog).filter(Dog.is_active == True)
+        result = await self.db_session.execute(query)
+        active_dogs = result.scalars().all()
+        return active_dogs
+        
     async def get_dog_by_name(self, name: str) -> Dog:
         query = select(Dog).where(Dog.name == name)
         res = await self.db_session.execute(query)
@@ -206,4 +212,10 @@ class TaskDAL:
         result = await self.session.execute(query)
         tasks = result.scalars().all()
         return tasks
+    
+    async def get_active_dogs(self) -> List[Dog]:
+        query = select(Dog).filter(Dog.is_active == True)
+        result = await self.session.execute(query)
+        active_dogs = result.scalars().all()
+        return active_dogs
 
